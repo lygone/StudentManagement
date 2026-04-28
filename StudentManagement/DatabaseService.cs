@@ -1,14 +1,17 @@
 ﻿using LiteDB;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace StudentManagement
 {
     public class DatabaseService
     {
-        private readonly string connectionString = @"Filename=Students.db;Connection=direct";
+        private static readonly string DbPath = Path.GetFullPath(Path.Combine(Application.StartupPath, @"..\..\Students.db"));
+        private readonly string connectionString = $"Filename={DbPath};Connection=direct";
 
         // ---------- 同步写操作 ----------
         public int AddStudent(Student student)
