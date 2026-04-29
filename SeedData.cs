@@ -25,14 +25,15 @@ class SeedData
     static readonly string[] Grades = {"一年级","二年级","三年级","四年级","五年级","六年级",
         "初一","初二","初三","高一","高二","高三"};
 
-    static (string hash, string salt) HashPassword(string password)
+    static void HashPassword(string password, out string hash, out string salt)
     {
-        byte[] salt = new byte[32];
-        using (var rng = RandomNumberGenerator.Create()) rng.GetBytes(salt);
-        byte[] hash;
-        using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000, HashAlgorithmName.SHA256))
-            hash = pbkdf2.GetBytes(32);
-        return (Convert.ToBase64String(hash), Convert.ToBase64String(salt));
+        byte[] saltBytes = new byte[32];
+        using (var rng = RandomNumberGenerator.Create()) rng.GetBytes(saltBytes);
+        byte[] hashBytes;
+        using (var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 100000, HashAlgorithmName.SHA256))
+            hashBytes = pbkdf2.GetBytes(32);
+        hash = Convert.ToBase64String(hashBytes);
+        salt = Convert.ToBase64String(saltBytes);
     }
 
     static void Main()
@@ -47,12 +48,13 @@ class SeedData
 
         if (File.Exists(dbPath)) { File.Delete(dbPath); Console.WriteLine("[OK] Old database deleted"); }
 
-        using (var db = new LiteDatabase($"Filename={dbPath};Connection=direct"))
+        using (var db = new LiteDatabase(string.Format("Filename={0};Connection=direct", dbPath)))
         {
             // 1. Create admin
             Console.WriteLine("[1/3] Creating admin...");
             var users = db.GetCollection<User>("users");
-            var (hash, salt) = HashPassword("199610");
+            string hash, salt;
+            HashPassword("199610", out hash, out salt);
             var admin = new BsonDocument { ["_id"] = 1, ["Username"] = "lygone",
                 ["PasswordHash"] = hash, ["Salt"] = salt, ["Role"] = "管理员", ["CreatedAt"] = DateTime.Now };
             users.Insert(admin);
@@ -80,7 +82,7 @@ class SeedData
                 });
 
                 if (batch.Count >= 100) { students.InsertBulk(batch); batch.Clear(); }
-                if ((i + 1) % 100 == 0) Console.WriteLine($"      {i + 1}/1000");
+                if ((i + 1) % 100 == 0) Console.WriteLine("      {0}/1000", i + 1);
             }
             if (batch.Count > 0) students.InsertBulk(batch);
             Console.WriteLine("      Done: 1000 students");
@@ -103,13 +105,13 @@ class SeedData
             Console.WriteLine("========================================");
             Console.WriteLine("  Seed completed!");
             Console.WriteLine("========================================");
-            Console.WriteLine($"  Admin   : lygone / 199610");
-            Console.WriteLine($"  Students: {count}");
-            Console.WriteLine($"  AvgScore: {avg}");
+            Console.WriteLine("  Admin   : lygone / 199610");
+            Console.WriteLine("  Students: {0}", count);
+            Console.WriteLine("  AvgScore: {0}", avg);
             Console.Write  ("  Grades  : ");
-            foreach (var kv in grades) Console.Write($"{kv.Key}({kv.Value}) ");
+            foreach (var kv in grades) Console.Write("{0}({1}) ", kv.Key, kv.Value);
             Console.WriteLine();
-            Console.WriteLine($"  DB path : {dbPath}");
+            Console.WriteLine("  DB path : {0}", dbPath);
             Console.WriteLine();
             Console.WriteLine("  Run bin\\Debug\\StudentManagement.exe");
             Console.WriteLine("========================================");
