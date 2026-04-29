@@ -52,11 +52,16 @@ class SeedData
         {
             // 1. Create admin
             Console.WriteLine("[1/3] Creating admin...");
-            var users = db.GetCollection<User>("users");
+            var users = db.GetCollection<BsonDocument>("users");
             string hash, salt;
             HashPassword("199610", out hash, out salt);
-            var admin = new BsonDocument { ["_id"] = 1, ["Username"] = "lygone",
-                ["PasswordHash"] = hash, ["Salt"] = salt, ["Role"] = "管理员", ["CreatedAt"] = DateTime.Now };
+            var admin = new BsonDocument();
+            admin["_id"] = 1;
+            admin["Username"] = "lygone";
+            admin["PasswordHash"] = hash;
+            admin["Salt"] = salt;
+            admin["Role"] = "管理员";
+            admin["CreatedAt"] = DateTime.Now;
             users.Insert(admin);
             Console.WriteLine("      admin: lygone / 199610");
 
@@ -76,10 +81,14 @@ class SeedData
                 double score = Math.Round(rng.NextDouble() * 60 + 40, 1);
                 var now = DateTime.Now.AddDays(-rng.Next(0, 365)).AddHours(-rng.Next(0, 24));
 
-                batch.Add(new BsonDocument {
-                    ["Name"] = name, ["Age"] = age, ["Grade"] = grade,
-                    ["Score"] = score, ["CreatedAt"] = now, ["UpdatedAt"] = now
-                });
+                var doc = new BsonDocument();
+                doc["Name"] = name;
+                doc["Age"] = age;
+                doc["Grade"] = grade;
+                doc["Score"] = score;
+                doc["CreatedAt"] = now;
+                doc["UpdatedAt"] = now;
+                batch.Add(doc);
 
                 if (batch.Count >= 100) { students.InsertBulk(batch); batch.Clear(); }
                 if ((i + 1) % 100 == 0) Console.WriteLine("      {0}/1000", i + 1);
@@ -117,14 +126,4 @@ class SeedData
             Console.WriteLine("========================================");
         }
     }
-}
-
-class User
-{
-    public int Id { get; set; }
-    public string Username { get; set; }
-    public string PasswordHash { get; set; }
-    public string Salt { get; set; }
-    public string Role { get; set; }
-    public DateTime CreatedAt { get; set; }
 }

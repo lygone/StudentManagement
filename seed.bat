@@ -18,11 +18,15 @@ if %ERRORLEVEL% NEQ 0 (
 echo [OK] Compiled
 
 echo [2/2] Generating test data...
+copy /Y packages\LiteDB.5.0.21\lib\net45\*.dll . >nul
+copy /Y packages\System.Buffers.4.5.1\lib\net461\*.dll . >nul
 SeedData.exe
+del LiteDB.dll System.Buffers.dll SeedData.exe >nul 2>&1
 echo.
 echo Copying database to project output...
 if not exist "StudentManagement\bin\Debug" mkdir "StudentManagement\bin\Debug"
 copy /Y Students.db "StudentManagement\bin\Debug\Students.db" >nul
+del Students.db >nul 2>&1
 echo [OK] Done!
 echo.
 pause
