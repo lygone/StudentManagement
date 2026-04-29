@@ -72,24 +72,6 @@ namespace StudentManagement
         }
 
         // ========== 公共筛选逻辑 ==========
-        private ILiteQueryable<Student> BuildFilterQuery(string keyword, string grade,
-            int? ageMin, int? ageMax, double? scoreMin, double? scoreMax)
-        {
-            var query = Students.Query();
-            if (!string.IsNullOrEmpty(keyword))
-                query = query.Where(s => s.Name.Contains(keyword));
-            if (!string.IsNullOrEmpty(grade))
-                query = query.Where(s => s.Grade == grade);
-            if (ageMin.HasValue)
-                query = query.Where(s => s.Age >= ageMin.Value);
-            if (ageMax.HasValue)
-                query = query.Where(s => s.Age <= ageMax.Value);
-            if (scoreMin.HasValue)
-                query = query.Where(s => s.Score >= scoreMin.Value);
-            if (scoreMax.HasValue)
-                query = query.Where(s => s.Score <= scoreMax.Value);
-            return query;
-        }
 
         // ========== 异步查询 ==========
         public Task<List<Student>> GetAllStudentsAsync()
@@ -108,14 +90,26 @@ namespace StudentManagement
         {
             return Task.Run(() =>
             {
-                var query = BuildFilterQuery(keyword, grade, ageMin, ageMax, scoreMin, scoreMax);
-                var result = query.OrderBy(s => s.Id);
+                var all = Students.FindAll().ToList();
+                if (!string.IsNullOrEmpty(keyword))
+                    all = all.Where(s => s.Name.Contains(keyword)).ToList();
+                if (!string.IsNullOrEmpty(grade))
+                    all = all.Where(s => s.Grade == grade).ToList();
+                if (ageMin.HasValue)
+                    all = all.Where(s => s.Age >= ageMin.Value).ToList();
+                if (ageMax.HasValue)
+                    all = all.Where(s => s.Age <= ageMax.Value).ToList();
+                if (scoreMin.HasValue)
+                    all = all.Where(s => s.Score >= scoreMin.Value).ToList();
+                if (scoreMax.HasValue)
+                    all = all.Where(s => s.Score <= scoreMax.Value).ToList();
+                var ordered = all.OrderBy(s => s.Id).ToList();
                 if (pageSize.HasValue && pageIndex.HasValue)
                 {
                     int skip = pageIndex.Value * pageSize.Value;
-                    return result.Offset(skip).Limit(pageSize.Value).ToList();
+                    return ordered.Skip(skip).Take(pageSize.Value).ToList();
                 }
-                return result.ToList();
+                return ordered;
             });
         }
 
@@ -124,8 +118,20 @@ namespace StudentManagement
         {
             return Task.Run(() =>
             {
-                var query = BuildFilterQuery(keyword, grade, ageMin, ageMax, scoreMin, scoreMax);
-                return query.Count();
+                var all = Students.FindAll().ToList();
+                if (!string.IsNullOrEmpty(keyword))
+                    all = all.Where(s => s.Name.Contains(keyword)).ToList();
+                if (!string.IsNullOrEmpty(grade))
+                    all = all.Where(s => s.Grade == grade).ToList();
+                if (ageMin.HasValue)
+                    all = all.Where(s => s.Age >= ageMin.Value).ToList();
+                if (ageMax.HasValue)
+                    all = all.Where(s => s.Age <= ageMax.Value).ToList();
+                if (scoreMin.HasValue)
+                    all = all.Where(s => s.Score >= scoreMin.Value).ToList();
+                if (scoreMax.HasValue)
+                    all = all.Where(s => s.Score <= scoreMax.Value).ToList();
+                return all.Count;
             });
         }
 
@@ -135,8 +141,19 @@ namespace StudentManagement
         {
             return Task.Run(() =>
             {
-                var query = BuildFilterQuery(keyword, grade, ageMin, ageMax, scoreMin, scoreMax);
-                var all = query.ToList();
+                var all = Students.FindAll().ToList();
+                if (!string.IsNullOrEmpty(keyword))
+                    all = all.Where(s => s.Name.Contains(keyword)).ToList();
+                if (!string.IsNullOrEmpty(grade))
+                    all = all.Where(s => s.Grade == grade).ToList();
+                if (ageMin.HasValue)
+                    all = all.Where(s => s.Age >= ageMin.Value).ToList();
+                if (ageMax.HasValue)
+                    all = all.Where(s => s.Age <= ageMax.Value).ToList();
+                if (scoreMin.HasValue)
+                    all = all.Where(s => s.Score >= scoreMin.Value).ToList();
+                if (scoreMax.HasValue)
+                    all = all.Where(s => s.Score <= scoreMax.Value).ToList();
                 int total = all.Count;
                 double avgAge = total > 0 ? all.Average(s => s.Age) : 0;
                 double avgScore = total > 0 ? all.Average(s => s.Score) : 0;
