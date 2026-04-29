@@ -17,6 +17,7 @@ namespace StudentManagement
         {
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text;
+            string confirm = txtConfirm.Text;
 
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
@@ -36,6 +37,14 @@ namespace StudentManagement
                 return;
             }
 
+            if (password != confirm)
+            {
+                MessageBox.Show("两次输入的密码不一致！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtConfirm.Clear();
+                txtConfirm.Focus();
+                return;
+            }
+
             if (dbService.AddUser(username, password, "管理员"))
             {
                 MessageBox.Show("管理员账号创建成功！请重新登录。", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -47,6 +56,7 @@ namespace StudentManagement
                 MessageBox.Show("创建失败，用户名可能已存在？", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 txtUsername.Clear();
                 txtPassword.Clear();
+                txtConfirm.Clear();
                 txtUsername.Focus();
             }
         }
