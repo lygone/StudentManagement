@@ -741,10 +741,25 @@ namespace StudentManagement
             try
             {
                 string hostName = Dns.GetHostName();
-                var ipList = Dns.GetHostEntry(hostName).AddressList;
-                var ipv4 = ipList.FirstOrDefault(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-                lblComputer.Text = (ipv4 != null)
-                    ? $"💻 {hostName}    🌐 {ipv4}"
+                var ips = Dns.GetHostEntry(hostName).AddressList
+                    .Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    .Select(a => a.ToString())
+                    .ToList();
+
+                string bestIp = null;
+                var preferRanges = new[] { "192.168.", "10.", "172.16.", "172.17.", "172.18.", "172.19.",
+                    "172.20.", "172.21.", "172.22.", "172.23.", "172.24.", "172.25.", "172.26.",
+                    "172.27.", "172.28.", "172.29.", "172.30.", "172.31." };
+                foreach (var prefix in preferRanges)
+                {
+                    bestIp = ips.FirstOrDefault(ip => ip.StartsWith(prefix));
+                    if (bestIp != null) break;
+                }
+                if (bestIp == null) bestIp = ips.FirstOrDefault(ip => ip != "127.0.0.1");
+                if (bestIp == null && ips.Count > 0) bestIp = ips[0];
+
+                lblComputer.Text = (bestIp != null)
+                    ? $"💻 {hostName}    🌐 {bestIp}"
                     : $"💻 {hostName}";
             }
             catch

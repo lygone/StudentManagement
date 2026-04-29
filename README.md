@@ -32,9 +32,10 @@ git clone <repo-url>
 
 # 2. 用 Visual Studio 打开 StudentManagement.slnx，生成解决方案
 
-# 3. 运行初始化脚本（生成测试数据）
-#    右键 init-data.ps1 → 使用 PowerShell 运行
-#    或终端执行: powershell -ExecutionPolicy Bypass -File init-data.ps1
+# 3. 生成测试数据（二选一）：
+
+#    方式A: 双击运行 seed.bat（推荐，无需 PowerShell）
+#    方式B: 右键 init-data.ps1 → 使用 PowerShell 运行
 
 # 4. 运行 bin\Debug\StudentManagement.exe
 #    管理员登录: lygone / 199610
