@@ -32,10 +32,7 @@ git clone <repo-url>
 
 # 2. 用 Visual Studio 打开 StudentManagement.slnx，生成解决方案
 
-# 3. 生成测试数据（二选一）：
-
-#    方式A: 双击运行 seed.bat（推荐，无需 PowerShell）
-#    方式B: 右键 init-data.ps1 → 使用 PowerShell 运行
+# 3. 双击运行 seed.bat 生成测试数据
 
 # 4. 运行 bin\Debug\StudentManagement.exe
 #    管理员登录: lygone / 199610
@@ -53,17 +50,18 @@ StudentManagement/
 │   ├── LoginForm.cs         # 登录窗口
 │   ├── AdminInitForm.cs     # 首次初始化管理员
 │   └── UserManagementForm.cs# 用户管理
-├── init-data.ps1            # 测试数据初始化脚本
+├── seed.bat + SeedData.cs    # 测试数据生成脚本
 └── packages/                # NuGet 包
 ```
 
-## init-data.ps1 脚本
+## seed.bat 脚本
 
-项目克隆后**没有数据库文件**，运行此脚本自动生成测试数据：
+项目克隆后**没有数据库文件**，双击 `seed.bat` 自动生成测试数据：
 
+- 编译 `SeedData.cs`（使用系统自带的 csc.exe）
 - 创建管理员账号：`lygone` / `199610`
 - 随机生成 **1000 名学生**（中文姓名、6~19岁、12个班级、40~100分）
-- 数据库生成在 `bin\Debug\Students.db`
+- 数据库自动复制到 `bin\Debug\Students.db`
 
 ## 注意事项
 
