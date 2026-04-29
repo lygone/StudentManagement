@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 class SeedData
 {
@@ -36,39 +35,56 @@ class SeedData
         salt = Convert.ToBase64String(saltBytes);
     }
 
+    class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string PasswordHash { get; set; }
+        public string Salt { get; set; }
+        public string Role { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    class Student
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string Grade { get; set; }
+        public double Score { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
+
     static void Main()
     {
         var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Students.db");
-        var targetDir = Path.GetDirectoryName(dbPath);
-        if (!Directory.Exists(targetDir)) Directory.CreateDirectory(targetDir);
+        if (File.Exists(dbPath)) { File.Delete(dbPath); Console.WriteLine("[OK] Old database deleted"); }
 
         Console.WriteLine("========================================");
         Console.WriteLine("  StudentManagement - Seed Data");
         Console.WriteLine("========================================");
 
-        if (File.Exists(dbPath)) { File.Delete(dbPath); Console.WriteLine("[OK] Old database deleted"); }
-
         using (var db = new LiteDatabase(string.Format("Filename={0};Connection=direct", dbPath)))
         {
-            // 1. Create admin
             Console.WriteLine("[1/3] Creating admin...");
-            var users = db.GetCollection<BsonDocument>("users");
+            var users = db.GetCollection<User>("users");
             string hash, salt;
             HashPassword("199610", out hash, out salt);
-            var admin = new BsonDocument();
-            admin["_id"] = 1;
-            admin["Username"] = "lygone";
-            admin["PasswordHash"] = hash;
-            admin["Salt"] = salt;
-            admin["Role"] = "管理员";
-            admin["CreatedAt"] = DateTime.Now;
+            var admin = new User
+            {
+                Username = "lygone",
+                PasswordHash = hash,
+                Salt = salt,
+                Role = "管理员",
+                CreatedAt = DateTime.Now
+            };
             users.Insert(admin);
             Console.WriteLine("      admin: lygone / 199610");
 
-            // 2. Generate 1000 students
             Console.WriteLine("[2/3] Generating 1000 students...");
-            var students = db.GetCollection<BsonDocument>("students");
-            var batch = new List<BsonDocument>();
+            var students = db.GetCollection<Student>("students");
+            var batch = new List<Student>();
             var rng = new Random();
 
             for (int i = 0; i < 1000; i++)
@@ -76,19 +92,17 @@ class SeedData
                 bool isMale = rng.Next(2) == 0;
                 string name = Surnames[rng.Next(Surnames.Length)] +
                     (isMale ? MaleNames[rng.Next(MaleNames.Length)] : FemaleNames[rng.Next(FemaleNames.Length)]);
-                int age = rng.Next(6, 20);
-                string grade = Grades[rng.Next(Grades.Length)];
-                double score = Math.Round(rng.NextDouble() * 60 + 40, 1);
                 var now = DateTime.Now.AddDays(-rng.Next(0, 365)).AddHours(-rng.Next(0, 24));
-
-                var doc = new BsonDocument();
-                doc["Name"] = name;
-                doc["Age"] = age;
-                doc["Grade"] = grade;
-                doc["Score"] = score;
-                doc["CreatedAt"] = now;
-                doc["UpdatedAt"] = now;
-                batch.Add(doc);
+                var s = new Student
+                {
+                    Name = name,
+                    Age = rng.Next(6, 20),
+                    Grade = Grades[rng.Next(Grades.Length)],
+                    Score = Math.Round(rng.NextDouble() * 60 + 40, 1),
+                    CreatedAt = now,
+                    UpdatedAt = now
+                };
+                batch.Add(s);
 
                 if (batch.Count >= 100) { students.InsertBulk(batch); batch.Clear(); }
                 if ((i + 1) % 100 == 0) Console.WriteLine("      {0}/1000", i + 1);
@@ -96,17 +110,15 @@ class SeedData
             if (batch.Count > 0) students.InsertBulk(batch);
             Console.WriteLine("      Done: 1000 students");
 
-            // 3. Verify
             Console.WriteLine("[3/3] Verifying...");
             var count = students.Count();
             double total = 0; int cnt = 0;
-            var grades = new Dictionary<string, int>();
+            var gradeDict = new Dictionary<string, int>();
             foreach (var s in students.FindAll())
             {
-                total += s["Score"].AsDouble; cnt++;
-                var g = s["Grade"].AsString;
-                if (!grades.ContainsKey(g)) grades[g] = 0;
-                grades[g]++;
+                total += s.Score; cnt++;
+                if (!gradeDict.ContainsKey(s.Grade)) gradeDict[s.Grade] = 0;
+                gradeDict[s.Grade]++;
             }
             double avg = cnt > 0 ? Math.Round(total / cnt, 2) : 0;
 
@@ -117,8 +129,8 @@ class SeedData
             Console.WriteLine("  Admin   : lygone / 199610");
             Console.WriteLine("  Students: {0}", count);
             Console.WriteLine("  AvgScore: {0}", avg);
-            Console.Write  ("  Grades  : ");
-            foreach (var kv in grades) Console.Write("{0}({1}) ", kv.Key, kv.Value);
+            Console.Write("  Grades  : ");
+            foreach (var kv in gradeDict) Console.Write("{0}({1}) ", kv.Key, kv.Value);
             Console.WriteLine();
             Console.WriteLine("  DB path : {0}", dbPath);
             Console.WriteLine();
