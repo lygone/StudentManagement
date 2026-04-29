@@ -113,7 +113,7 @@ namespace StudentManagement
                 if (pageSize.HasValue && pageIndex.HasValue)
                 {
                     int skip = pageIndex.Value * pageSize.Value;
-                    return result.Skip(skip).Limit(pageSize.Value).ToList();
+                    return result.Offset(skip).Limit(pageSize.Value).ToList();
                 }
                 return result.ToList();
             });
