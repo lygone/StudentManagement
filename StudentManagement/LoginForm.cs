@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace StudentManagement
@@ -8,10 +10,26 @@ namespace StudentManagement
         public LoginForm()
         {
             InitializeComponent();
+            AcceptButton = btnLogin;
+
+            var origColor = btnLogin.BackColor;
+            btnLogin.MouseEnter += (s, e) => btnLogin.BackColor = Brighten(origColor, 1.15f);
+            btnLogin.MouseLeave += (s, e) => btnLogin.BackColor = origColor;
+            btnLogin.MouseDown += (s, e) => btnLogin.BackColor = Darken(origColor, 0.85f);
+            btnLogin.MouseUp += (s, e) => btnLogin.BackColor = btnLogin.ClientRectangle.Contains(btnLogin.PointToClient(Cursor.Position)) ? Brighten(origColor, 1.15f) : origColor;
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private static Color Brighten(Color c, float f) => Color.FromArgb(c.A, Math.Min(255, (int)(c.R * f)), Math.Min(255, (int)(c.G * f)), Math.Min(255, (int)(c.B * f)));
+        private static Color Darken(Color c, float f) => Color.FromArgb(c.A, (int)(c.R * f), (int)(c.G * f), (int)(c.B * f));
+
+        private async void btnLogin_Click(object sender, EventArgs e)
         {
+            var origColor = btnLogin.BackColor;
+            btnLogin.BackColor = Darken(origColor, 0.85f);
+            btnLogin.Refresh();
+            await Task.Delay(100);
+            btnLogin.BackColor = origColor;
+
             string username = txtAccount.Text.Trim();
             string password = txtPassword.Text;
 

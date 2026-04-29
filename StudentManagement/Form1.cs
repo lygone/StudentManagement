@@ -128,7 +128,10 @@ namespace StudentManagement
 
         private async Task UpdateChartsAsync()
         {
-            scoreChartData = await dbService.GetScoreDistributionAsync();
+            scoreChartData = await dbService.GetScoreDistributionAsync(
+                currentKeyword, currentGrade,
+                currentAgeMin, currentAgeMax,
+                currentScoreMin, currentScoreMax);
             picGradeChart.Invalidate();
             picScoreChart.Invalidate();
         }

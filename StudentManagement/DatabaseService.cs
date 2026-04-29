@@ -163,11 +163,26 @@ namespace StudentManagement
             });
         }
 
-        public Task<Dictionary<string, double>> GetScoreDistributionAsync()
+        public Task<Dictionary<string, double>> GetScoreDistributionAsync(
+            string keyword = null, string grade = null,
+            int? ageMin = null, int? ageMax = null,
+            double? scoreMin = null, double? scoreMax = null)
         {
             return Task.Run(() =>
             {
                 var all = Students.FindAll().ToList();
+                if (!string.IsNullOrEmpty(keyword))
+                    all = all.Where(s => s.Name.Contains(keyword)).ToList();
+                if (!string.IsNullOrEmpty(grade))
+                    all = all.Where(s => s.Grade == grade).ToList();
+                if (ageMin.HasValue)
+                    all = all.Where(s => s.Age >= ageMin.Value).ToList();
+                if (ageMax.HasValue)
+                    all = all.Where(s => s.Age <= ageMax.Value).ToList();
+                if (scoreMin.HasValue)
+                    all = all.Where(s => s.Score >= scoreMin.Value).ToList();
+                if (scoreMax.HasValue)
+                    all = all.Where(s => s.Score <= scoreMax.Value).ToList();
                 var dist = new Dictionary<string, double>
                 {
                     ["0-59"] = 0,
