@@ -30,7 +30,7 @@
 # 1. 克隆仓库
 git clone <repo-url>
 
-# 2. 用 Visual Studio 打开 StudentManagement.slnx，生成解决方案
+# 2. 用 Visual Studio 打开项目，按 F5 运行一次（会自动还原 NuGet 包）
 
 # 3. 双击运行 seed.bat 生成测试数据
 
@@ -56,7 +56,7 @@ StudentManagement/
 
 ## seed.bat 脚本
 
-项目克隆后**没有数据库文件**，双击 `seed.bat` 自动生成测试数据：
+项目克隆后**没有数据库文件和 NuGet 包**。使用 seed.bat 前，请先在 Visual Studio 中**按 F5 运行一次**（会自动还原 NuGet 依赖到 `packages\` 目录），然后双击 `seed.bat` 即可生成测试数据：
 
 - 编译 `SeedData.cs`（使用系统自带的 csc.exe）
 - 创建管理员账号：`lygone` / `199610`
